@@ -1,0 +1,20 @@
+[
+  {
+    "id": "mock_reddit_1",
+    "author_handle": "mock_user_1",
+    "text": "This is a mock reddit post about security.",
+    "media_urls": [],
+    "created_at": "2026-06-12T12:00:00Z",
+    "subreddit": "security",
+    "type": "post"
+  },
+  {
+    "id": "mock_reddit_2",
+    "author_handle": "mock_user_2",
+    "text": "Mock comment about the mock post.",
+    "media_urls": [],
+    "created_at": "2026-06-12T12:05:00Z",
+    "subreddit": "security",
+    "type": "comment"
+  }
+]

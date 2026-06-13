@@ -1,0 +1,205 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./backend
+    env_file:
+      - path: .env
+        required: true
+    environment: &app-environment
+      DATABASE_URL: postgresql+asyncpg://police:police@db:5432/police
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis:6379/1
+      MINIO_ENDPOINT: minio:9000
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    # Gunicorn tuning formula: (2 × CPU_cores) + 1
+    # Example: For a 4-core machine, set GUNICORN_WORKERS=9 in your .env
+    command: >
+      sh -c "alembic upgrade head &&
+             gunicorn app.main:app -w $${GUNICORN_WORKERS:-2} -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
+    restart: unless-stopped
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+
+  worker-ingest:
+    build:
+      context: ./backend
+    env_file:
+      - path: .env
+        required: true
+    environment: *app-environment
+    healthcheck:
+      disable: true
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    command: celery -A app.tasks.celery_app:celery_app worker -Q ingest -n worker-ingest@%h --loglevel=INFO
+    restart: unless-stopped
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+
+  worker-nlp:
+    build:
+      context: ./backend
+    env_file:
+      - path: .env
+        required: true
+    environment: *app-environment
+    healthcheck:
+      disable: true
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    command: celery -A app.tasks.celery_app:celery_app worker -Q nlp -n worker-nlp@%h --loglevel=INFO
+    restart: unless-stopped
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+
+  worker-vision:
+    build:
+      context: ./backend
+    env_file:
+      - path: .env
+        required: true
+    environment: *app-environment
+    healthcheck:
+      disable: true
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    command: celery -A app.tasks.celery_app:celery_app worker -Q vision -n worker-vision@%h --loglevel=INFO --concurrency=1
+    restart: unless-stopped
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+
+  worker-scoring:
+    build:
+      context: ./backend
+    env_file:
+      - path: .env
+        required: true
+    environment: *app-environment
+    healthcheck:
+      disable: true
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    command: celery -A app.tasks.celery_app:celery_app worker -Q scoring,alerts -n worker-scoring@%h --loglevel=INFO
+    restart: unless-stopped
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+
+  beat:
+    build:
+      context: ./backend
+    env_file:
+      - path: .env
+        required: true
+    environment: *app-environment
+    healthcheck:
+      disable: true
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: celery -A app.tasks.celery_app:celery_app beat --loglevel=INFO -s /tmp/celerybeat-schedule
+    restart: unless-stopped
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+
+  db:
+    image: postgres:16-alpine
+    env_file:
+      - path: .env
+        required: true
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    env_file:
+      - path: .env
+        required: true
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD}"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    env_file:
+      - path: .env
+        required: true
+    volumes:
+      - minio-data:/data
+    command: server /data
+    restart: unless-stopped
+
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  huggingface_cache:
+  neo4j-data:
+  neo4j-logs:

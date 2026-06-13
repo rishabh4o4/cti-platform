@@ -1,0 +1,18 @@
+[
+  {
+    "id": "1234567890",
+    "author_handle": "mock_telegram_channel",
+    "text": "This is a mock telegram message.",
+    "media_urls": [],
+    "created_at": "2026-06-12T12:00:00Z",
+    "channel": "mock_channel"
+  },
+  {
+    "id": "1234567891",
+    "author_handle": "mock_telegram_channel",
+    "text": "Another mock telegram message.",
+    "media_urls": ["s3://evidence/telegram/mock_media.jpg"],
+    "created_at": "2026-06-12T12:05:00Z",
+    "channel": "mock_channel"
+  }
+]

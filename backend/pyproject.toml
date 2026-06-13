@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=69.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "threat-intel-backend"
+version = "0.1.0"
+description = "FastAPI backend skeleton for harmful social media content detection and threat intelligence."
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.13.3",
+    "asgiref>=3.8.1",
+    "asyncpg>=0.30.0",
+    "celery[redis]>=5.4.0",
+    "fastapi[standard]>=0.115.0",
+    "gunicorn>=23.0.0",
+    "greenlet>=3.1.1",
+    "bcrypt>=4.2.0",
+    "pydantic>=2.9.2",
+    "pydantic-settings>=2.5.2",
+    "PyJWT[crypto]>=2.9.0",
+    "praw>=7.7.1,<8.0",
+    "redis>=5.1.1",
+    "slowapi>=0.1.9",
+    "SQLAlchemy>=2.0.35",
+    "structlog>=24.4.0",
+    "telethon>=1.36.0,<2.0",
+    "minio>=7.2.0",
+    "uuid6>=2024.1.12",
+    "uvicorn[standard]>=0.30.6",
+    "torch>=2.4.1",
+    "transformers>=4.45.1",
+    "accelerate>=0.34.2",
+    "sentencepiece>=0.2.0",
+    "neo4j>=5.0,<6.0",
+    "networkx>=3.0,<4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "aiosqlite>=0.20.0",
+    "httpx>=0.27.2",
+    "pytest>=8.3.3",
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.6.9",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008", "UP046"]
