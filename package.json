@@ -1,0 +1,14 @@
+{
+  "name": "threat-intel-platform",
+  "version": "1.0.0",
+  "description": "Root package for running frontend and backend concurrently",
+  "scripts": {
+    "dev:docker": "docker compose up db redis minio neo4j -d",
+    "dev:backend": "cd backend && uvicorn app.main:app --reload",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "npm run dev:docker && concurrently -c \"cyan,magenta\" -n \"BACKEND,FRONTEND\" \"npm run dev:backend\" \"npm run dev:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
