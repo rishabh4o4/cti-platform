@@ -23,8 +23,12 @@ pydantic>=2.9.2
 pydantic-settings>=2.5.2
 
 # Authentication & Security
+bcrypt>=4.2.0
 passlib[bcrypt]>=1.7.4
 PyJWT[crypto]>=2.9.0
+
+# Logging & Reporting
+structlog>=24.4.0
 
 # AI/ML Pipelines & Threat Detection Models
 torch>=2.4.1

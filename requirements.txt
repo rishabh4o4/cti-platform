@@ -17,13 +17,19 @@ redis>=5.1.1
 # Web Framework & API
 fastapi[standard]>=0.115.0
 uvicorn[standard]>=0.30.6
+gunicorn>=23.0.0
 slowapi>=0.1.9
 pydantic>=2.9.2
 pydantic-settings>=2.5.2
 
 # Authentication & Security
 bcrypt>=4.2.0
+passlib[bcrypt]>=1.7.4
 PyJWT[crypto]>=2.9.0
+
+# Logging & Reporting
+structlog>=24.4.0
+reportlab>=4.1.0
 
 # AI/ML Pipelines & Threat Detection Models
 torch>=2.4.1
