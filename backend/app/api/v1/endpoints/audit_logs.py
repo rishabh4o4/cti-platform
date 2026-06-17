@@ -13,7 +13,7 @@ from app.schemas.audit import AuditLogCreate, AuditLogRead
 router = APIRouter()
 
 
-@router.get("", response_model=list[AuditLogRead])
+@router.get("/", response_model=list[AuditLogRead])
 async def get_audit_logs(
     analyst: str | None = Query(None, description="Filter by analyst username"),
     action: str | None = Query(None, description="Filter by action name"),

@@ -3,11 +3,7 @@ from typing import Any
 
 import uuid
 
-# Patch passlib's detect_wrap_bug for modern bcrypt
-import passlib.handlers.bcrypt
-passlib.handlers.bcrypt.detect_wrap_bug = lambda *args: False
-
-from passlib.context import CryptContext
+import bcrypt
 import jwt
 import structlog
 from jwt import InvalidTokenError
@@ -18,18 +14,20 @@ from app.services.cache import get_redis
 log = structlog.get_logger()
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
-DUMMY_PASSWORD_HASH = pwd_context.hash("dummy_password")
+DUMMY_PASSWORD_HASH = bcrypt.hashpw(b"dummy_password", bcrypt.gensalt()).decode()
 
 
 def hash_password(plain: str) -> str:
     """Return a bcrypt hash of *plain*."""
-    return pwd_context.hash(plain)
+    return bcrypt.hashpw(plain.encode(), bcrypt.gensalt()).decode()
 
 
 def verify_password(candidate: str, hashed: str) -> bool:
     """Verify *candidate* against a bcrypt *hashed* value."""
-    return pwd_context.verify(candidate, hashed)
+    try:
+        return bcrypt.checkpw(candidate.encode(), hashed.encode())
+    except Exception:
+        return False
 
 
 def create_access_token(subject: str, role: str | None = None, user_id: str | None = None, expires_delta: timedelta | None = None) -> str:

@@ -13,10 +13,10 @@ celery_app = Celery(
         "app.tasks.scoring",
         "app.tasks.alerts",
         # DISABLED: real API access not available — uncomment when credentials are configured
-        # "app.tasks.reddit",
+        "app.tasks.reddit",
         "app.tasks.telegram",
         # DISABLED: real API access not available — uncomment when credentials are configured
-        # "app.tasks.x",
+        "app.tasks.x",
     ],
 )
 
@@ -42,19 +42,19 @@ celery_app.conf.update(
     },
     beat_schedule={
         # DISABLED: real API access not available — uncomment when credentials are configured
-        # "collect-reddit-data": {
-        #     "task": "app.tasks.reddit.collect_reddit_data",
-        #     "schedule": crontab(minute=f"*/{settings.reddit_poll_interval_minutes}"),
-        # },
+        "collect-reddit-data": {
+            "task": "app.tasks.reddit.collect_reddit_data",
+            "schedule": crontab(minute=f"*/{settings.reddit_poll_interval_minutes}"),
+        },
         "collect-telegram-data": {
             "task": "app.tasks.telegram.collect_telegram_data",
             "schedule": crontab(minute=f"*/{settings.telegram_poll_interval_minutes}"),
         },
         # DISABLED: real API access not available — uncomment when credentials are configured
-        # "collect-x-data": {
-        #     "task": "app.tasks.x.collect_x_data",
-        #     "schedule": crontab(minute=f"*/{settings.x_poll_interval_minutes}"),
-        # },
+        "collect-x-data": {
+            "task": "app.tasks.x.collect_x_data",
+            "schedule": crontab(minute=f"*/{settings.x_poll_interval_minutes}"),
+        },
         # Fix 5.1: watchdog — resets CollectionRun rows stuck in RUNNING status
         # (e.g. after a worker OOM / SIGKILL) so they don't pollute the dashboard.
         "reset-stale-runs": {

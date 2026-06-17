@@ -19,12 +19,14 @@ logger = logging.getLogger(__name__)
 # Basic keyword heuristic
 KEYWORDS = {"scam", "hack", "leak", "dump", "buy", "sell", "cc", "cvv", "stolen", "carding", "fraud", "phishing", "malware", "virus", "botnet", "exploit", "weapon", "drugs"}
 
+from neo4j.exceptions import ServiceUnavailable
+
 @celery_app.task(
     name="app.tasks.scoring.run_scoring",
     bind=True,
     max_retries=3,
-    default_retry_delay=10,
-    autoretry_for=(Exception,),
+    default_retry_delay=60,
+    autoretry_for=(TimeoutError, ConnectionError, ServiceUnavailable),
     retry_backoff=True,
 )
 def run_scoring(self, upstream_results: list[dict[str, Any]], content_id: str) -> dict[str, Any]:

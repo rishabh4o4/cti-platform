@@ -78,7 +78,7 @@ async def issue_token(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=True,
+        secure=settings.environment == "production",
         samesite="strict",
         path="/api/v1/auth/refresh",
         max_age=settings.jwt_refresh_token_expire_days * 24 * 60 * 60,
@@ -156,7 +156,7 @@ async def logout(
         key="refresh_token",
         path="/api/v1/auth/refresh",
         httponly=True,
-        secure=True,
+        secure=settings.environment == "production",
         samesite="strict"
     )
     return None

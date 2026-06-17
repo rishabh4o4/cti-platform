@@ -9,14 +9,14 @@ from alembic import op
 import sqlalchemy as sa
 import os
 import uuid
-from passlib.context import CryptContext
+import bcrypt
+from typing import Union, Sequence
 
 
-
-revision = 'cca33144f5c0'
-down_revision = '1dfaed3c4645'
-branch_labels = None
-depends_on = None
+revision: str = 'cca33144f5c0'
+down_revision: Union[str, None] = '1dfaed3c4645'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
@@ -35,20 +35,19 @@ def upgrade() -> None:
     admin_user = os.getenv("ADMIN_USERNAME")
     admin_pass = os.getenv("ADMIN_PASSWORD")
     if admin_user and admin_pass:
-        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
-        hashed = pwd_context.hash(admin_pass)
+        hashed = bcrypt.hashpw(admin_pass.encode(), bcrypt.gensalt()).decode()
         op.execute(
-            sa.text(
-                "INSERT INTO users (id, username, hashed_password, role, is_active) "
-                "VALUES (:id, :username, :hashed_password, :role, :is_active)"
-            ),
-            {
-                "id": str(uuid.uuid4()),
-                "username": admin_user,
-                "hashed_password": hashed,
-                "role": "ADMIN",
-                "is_active": True,
-            }
+            f"INSERT INTO users (id, username, hashed_password, role, is_active) "
+            f"VALUES ('{str(uuid.uuid4())}', '{admin_user}', '{hashed}', 'ADMIN', true)"
+        )
+    
+    analyst_user = os.getenv("ANALYST_USERNAME", "analyst")
+    analyst_pass = os.getenv("ANALYST_PASSWORD")
+    if analyst_user and analyst_pass:
+        hashed = bcrypt.hashpw(analyst_pass.encode(), bcrypt.gensalt()).decode()
+        op.execute(
+            f"INSERT INTO users (id, username, hashed_password, role, is_active) "
+            f"VALUES ('{str(uuid.uuid4())}', '{analyst_user}', '{hashed}', 'ANALYST', true)"
         )
     # ### end Alembic commands ###
 

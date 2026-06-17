@@ -14,7 +14,7 @@ from app.models.audit import AuditLog
 router = APIRouter()
 
 
-@router.post("", response_model=CaseRead, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=CaseRead, status_code=status.HTTP_201_CREATED)
 async def create_case(
     payload: CaseCreate,
     db: AsyncSession = Depends(get_db),

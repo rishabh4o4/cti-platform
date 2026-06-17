@@ -11,6 +11,8 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import toast from 'react-hot-toast';
 import { usePermission } from '@/lib/rbac';
 import { Permission } from '@/types';
+import { useAuthStore } from '@/store/useAuthStore';
+import { Settings } from 'lucide-react';
 
 const fetchAlerts = async () => (await api.get('/alerts')).data;
 
@@ -103,9 +105,44 @@ const AlertRow = React.memo(({ alert, resolveMutation, canExportPdf, canAcknowle
 });
 
 export default function AlertCenter() {
+  const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const { alerts: wsAlerts } = useAlertWebSocket();
   const [acknowledgedWsAlerts, setAcknowledgedWsAlerts] = useState<Set<string>>(new Set());
+
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [highThreshold, setHighThreshold] = useState('75');
+  const [criticalThreshold, setCriticalThreshold] = useState('90');
+
+  const { data: configData } = useQuery({
+    queryKey: ['alertConfig'],
+    queryFn: async () => (await api.get('/alerts/config')).data,
+    enabled: user?.role === 'admin'
+  });
+
+  React.useEffect(() => {
+    if (configData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setHighThreshold(configData.high_threshold.toString());
+      setCriticalThreshold(configData.critical_threshold.toString());
+    }
+  }, [configData]);
+
+  const configMutation = useMutation({
+    mutationFn: async () => {
+      await api.post('/alerts/config', { 
+        high_threshold: parseFloat(highThreshold), 
+        critical_threshold: parseFloat(criticalThreshold),
+        notification_channels: configData?.notification_channels || [] 
+      });
+    },
+    onSuccess: () => {
+      toast.success('Alert configuration updated');
+      setIsConfigOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['alertConfig'] });
+    },
+    onError: () => toast.error('Failed to update config')
+  });
 
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
@@ -218,7 +255,7 @@ export default function AlertCenter() {
             <Filter className="h-4 w-4 mr-2 text-text-secondary" />
             Filters
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 flex-1">
             <select
               value={severityFilter}
               onChange={(e) => setSeverityFilter(e.target.value)}
@@ -275,6 +312,15 @@ export default function AlertCenter() {
               </>
             )}
           </div>
+          {user?.role === 'admin' && (
+            <button
+              onClick={() => setIsConfigOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-surface border border-border text-text-secondary rounded-md hover:bg-background hover:text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary font-medium text-sm ml-auto"
+            >
+              <Settings className="h-4 w-4" />
+              Configure Alerts
+            </button>
+          )}
         </div>
 
         <div className="overflow-x-auto">
@@ -302,6 +348,56 @@ export default function AlertCenter() {
           </table>
         </div>
       </div>
+
+      {isConfigOpen && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface border border-border rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b border-border">
+              <h2 className="text-xl font-bold text-text-primary">Alert Configuration</h2>
+              <button onClick={() => setIsConfigOpen(false)} className="text-text-secondary hover:text-text-primary">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1">High Severity Threshold Score</label>
+                <input 
+                  type="number"
+                  value={highThreshold}
+                  onChange={(e) => setHighThreshold(e.target.value)}
+                  className="w-full bg-background border border-border focus:ring-primary rounded-md px-3 py-2 text-text-primary focus:outline-none focus:ring-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1">Critical Severity Threshold Score</label>
+                <input 
+                  type="number"
+                  value={criticalThreshold}
+                  onChange={(e) => setCriticalThreshold(e.target.value)}
+                  className="w-full bg-background border border-border focus:ring-primary rounded-md px-3 py-2 text-text-primary focus:outline-none focus:ring-2"
+                />
+              </div>
+              <div className="pt-4 flex justify-end gap-3">
+                <button 
+                  type="button"
+                  onClick={() => setIsConfigOpen(false)}
+                  className="px-4 py-2 border border-border text-text-primary rounded-md hover:bg-background transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => configMutation.mutate()}
+                  disabled={configMutation.isPending}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  {configMutation.isPending ? 'Saving...' : 'Save Settings'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

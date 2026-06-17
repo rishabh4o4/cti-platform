@@ -22,7 +22,7 @@ from app.services.websocket import manager
 router = APIRouter()
 
 
-@router.get("", response_model=list[AlertRead])
+@router.get("/", response_model=list[AlertRead])
 async def get_alerts(
     severity: RiskLabel | None = None,
     source: SourceType | None = None,

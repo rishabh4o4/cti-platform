@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Eye } from 'lucide-react';
 import { useReadOnlyMode } from '../../lib/rbac';
 

@@ -37,7 +37,7 @@ async def trigger_collector_run(
 async def collector_status(
     limit: int = Query(default=50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
-    _: Principal = Depends(require_role([Role.VIEWER, Role.ANALYST])),
+    _: Principal = Depends(require_admin()),
 ) -> CollectorStatusResponse:
     runs = await list_collection_runs(db, limit=limit)
     return CollectorStatusResponse(runs=runs)

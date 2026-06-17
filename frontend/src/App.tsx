@@ -14,7 +14,8 @@ const GraphVisualizer = React.lazy(() => import('./pages/GraphVisualizer'));
 const AlertCenter = React.lazy(() => import('./pages/AlertCenter'));
 const Analytics = React.lazy(() => import('./pages/Analytics'));
 const SourceStatus = React.lazy(() => import('./pages/SourceStatus'));
-import { ProtectedRoute } from './components/shared/ProtectedRoute';
+const UserManagement = React.lazy(() => import('./pages/UserManagement'));
+import { ProtectedRoute, RequireRole } from './components/shared/ProtectedRoute';
 import { useAuthStore } from './store/useAuthStore';
 import { fetchCurrentUser } from './lib/api';
 
@@ -35,10 +36,14 @@ function App() {
   useEffect(() => {
     if (token && !user) {
       fetchCurrentUser().catch(() => {
-        // If it fails, silent refresh logic in interceptor might kick in or it will logout
+        useAuthStore.getState().logout();
       });
     }
   }, [token, user]);
+
+  if (token && !user) {
+    return <div className="h-screen w-screen bg-background flex items-center justify-center text-text-secondary">Loading...</div>;
+  }
 
   return (
     <ErrorBoundary>
@@ -58,9 +63,8 @@ function App() {
                   <Route path="/graph" element={<GraphVisualizer />} />
                   <Route path="/alerts" element={<AlertCenter />} />
                   <Route path="/analytics" element={<Analytics />} />
-                  <Route path="/sources" element={<SourceStatus />} />
-                  {/* Admin only route example if needed later */}
-                  {/* <Route path="/users" element={<RequireRole role="admin"><UserManagement /></RequireRole>} /> */}
+                  <Route path="/sources" element={<RequireRole role="admin"><SourceStatus /></RequireRole>} />
+                  <Route path="/users" element={<RequireRole role="admin"><UserManagement /></RequireRole>} />
                 </Route>
               </Route>
               

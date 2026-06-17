@@ -29,7 +29,7 @@ class SearchResponse(BaseModel):
 router = APIRouter()
 
 
-@router.get("", response_model=SearchResponse)
+@router.get("/", response_model=SearchResponse)
 async def global_search(
     q: str = Query(..., min_length=2, description="Search query (minimum 2 characters)"),
     limit: int = Query(default=20, ge=1, le=100),

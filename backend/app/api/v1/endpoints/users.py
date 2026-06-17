@@ -19,7 +19,7 @@ router = APIRouter()
 _limiter = Limiter(key_func=get_remote_address)
 
 
-@router.get("", response_model=List[UserRead])
+@router.get("/", response_model=List[UserRead])
 async def get_users(
     db: AsyncSession = Depends(get_db),
     _: Principal = Depends(require_admin()),
@@ -28,7 +28,7 @@ async def get_users(
     return list(result.scalars().all())
 
 
-@router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 @_limiter.limit("30/hour")
 async def create_user(
     request: Request,

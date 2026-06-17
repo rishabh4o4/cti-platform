@@ -25,13 +25,15 @@ export interface AuthUser {
   last_login?: string | null;
 }
 
-export enum Permission {
-  VIEW_ALL = "view_all",
-  INVESTIGATE = "investigate",
-  ACKNOWLEDGE_ALERTS = "acknowledge_alerts",
-  ADD_NOTES = "add_notes",
-  EXPORT_PDF = "export_pdf",
-  INGEST_CONTENT = "ingest_content",
-  TRIGGER_COLLECTION = "trigger_collection",
-  MANAGE_USERS = "manage_users",
-}
+export const Permission = {
+  VIEW_ALL: "view_all",
+  INVESTIGATE: "investigate",
+  ACKNOWLEDGE_ALERTS: "acknowledge_alerts",
+  ADD_NOTES: "add_notes",
+  EXPORT_PDF: "export_pdf",
+  INGEST_CONTENT: "ingest_content",
+  TRIGGER_COLLECTION: "trigger_collection",
+  MANAGE_USERS: "manage_users",
+} as const;
+
+export type Permission = typeof Permission[keyof typeof Permission];

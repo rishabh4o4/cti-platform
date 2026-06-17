@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { Activity, Database, RefreshCw } from 'lucide-react';
+import { Activity, Database, RefreshCw, Play } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useAuthStore } from '@/store/useAuthStore';
 import { ErrorState } from '@/components/shared/ErrorState';
 import { Skeleton } from '@/components/shared/Skeleton';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -29,9 +31,24 @@ function isSourceMock(source: any) {
 }
 
 export default function SourceStatus() {
+  const user = useAuthStore((state) => state.user);
+
   const { data: sources, isLoading, isError, refetch } = useQuery({
     queryKey: ['sourceStatus'],
     queryFn: fetchSources,
+  });
+
+  const triggerMutation = useMutation({
+    mutationFn: async (sourceId: string) => {
+      await api.post('/collectors/run', { source_id: sourceId });
+    },
+    onSuccess: () => {
+      toast.success('Collection triggered successfully');
+      refetch();
+    },
+    onError: () => {
+      toast.error('Failed to trigger collection');
+    }
   });
 
   return (
@@ -83,11 +100,24 @@ export default function SourceStatus() {
                   <span className="text-xs text-text-secondary capitalize">{source.trigger_type}</span>
                 </div>
               </div>
-              <span className={`px-2.5 py-1 rounded-full text-xs font-medium uppercase tracking-wide border ${
-                source.status === 'running' ? 'bg-primary/10 text-primary border-primary/20' : source.status === 'failed' ? 'bg-critical/10 text-critical border-critical/20' : 'bg-background text-text-secondary border-border'
-              }`}>
-                {source.status}
-              </span>
+              <div className="flex flex-col items-end gap-2">
+                <span className={`px-2.5 py-1 rounded-full text-xs font-medium uppercase tracking-wide border ${
+                  source.status === 'running' ? 'bg-primary/10 text-primary border-primary/20' : source.status === 'failed' ? 'bg-critical/10 text-critical border-critical/20' : 'bg-background text-text-secondary border-border'
+                }`}>
+                  {source.status}
+                </span>
+                {user?.role === 'admin' && (
+                  <button
+                    onClick={() => triggerMutation.mutate(source.source)}
+                    disabled={source.status === 'running' || triggerMutation.isPending}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-surface border border-border text-text-secondary hover:bg-background hover:text-text-primary disabled:opacity-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                    title="Trigger Collector"
+                  >
+                    <Play className="h-3 w-3" />
+                    Trigger
+                  </button>
+                )}
+              </div>
             </div>
             
             <div className="mt-auto space-y-3 border-t border-border pt-4">

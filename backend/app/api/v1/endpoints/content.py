@@ -45,7 +45,7 @@ VALID_TRANSITIONS: dict[str, set[str]] = {
 }
 
 
-@router.get("", response_model=Page[ContentItemRead])
+@router.get("/", response_model=Page[ContentItemRead])
 async def list_content_items(
     source: SourceType | None = None,
     label: RiskLabel | None = None,

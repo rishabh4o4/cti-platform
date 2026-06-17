@@ -15,6 +15,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { usePermission } from '@/lib/rbac';
 import { Permission } from '@/types';
 import { SystemHealth } from '@/components/dashboard/SystemHealth';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const fetchSummary = async () => (await api.get('/dashboard/summary')).data;
 
@@ -114,6 +115,7 @@ function computeTrend(trendData: any[] | undefined): number | undefined {
 }
 
 export default function Dashboard() {
+  const user = useAuthStore((state) => state.user);
   const { data: summary, isLoading: isLoadingSummary, isError: isErrorSummary, refetch: refetchSummary } = useQuery({ queryKey: ['dashboardSummary'], queryFn: fetchSummary });
   const { isLoading: isLoadingHeatmap, isError: isErrorHeatmap, refetch: refetchHeatmap } = useQuery({ queryKey: ['dashboardHeatmap'], queryFn: fetchHeatmap });
   const { data: topThreats, isLoading: isLoadingThreats, isError: isErrorThreats, refetch: refetchThreats } = useQuery({ queryKey: ['dashboardTopThreats'], queryFn: fetchTopThreats });
@@ -134,7 +136,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <SystemHealth />
+      {user?.role === 'admin' && <SystemHealth />}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="lg:col-span-2 bg-surface border border-border rounded-xl p-4 md:p-6 shadow-sm order-2 lg:order-1">

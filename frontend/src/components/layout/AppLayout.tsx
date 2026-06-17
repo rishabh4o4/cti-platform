@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
-import { LayoutDashboard, RadioReceiver, ShieldAlert, FileSearch, Network, Bell, BarChart2, LogOut, Moon, Sun, ChevronLeft, ChevronRight, Search, Menu, X } from 'lucide-react';
+import { LayoutDashboard, RadioReceiver, ShieldAlert, FileSearch, Network, Bell, BarChart2, LogOut, Moon, Sun, ChevronLeft, ChevronRight, Search, Menu, X, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
@@ -53,11 +53,13 @@ const navItems = [
   { name: 'Graph Visualizer', path: '/graph', icon: Network },
   { name: 'Alert Center', path: '/alerts', icon: Bell },
   { name: 'Analytics', path: '/analytics', icon: BarChart2 },
-  { name: 'Sources Status', path: '/sources', icon: RadioReceiver },
+  { name: 'Sources Status', path: '/sources', icon: RadioReceiver, adminOnly: true },
+  { name: 'Users', path: '/users', icon: Users, adminOnly: true },
 ];
 
 export function AppLayout() {
   const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
   const location = useLocation();
   const { theme, toggleTheme } = useThemeStore();
   const { connectionStatus } = useAlertWebSocket();
@@ -107,7 +109,7 @@ export function AppLayout() {
         </div>
         <nav className="flex-1 overflow-y-auto py-4 overflow-x-hidden">
           <ul className="space-y-1 px-3">
-            {navItems.map((item) => {
+            {navItems.filter(item => !item.adminOnly || user?.role === 'admin').map((item) => {
               const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
               const Icon = item.icon;
               return (

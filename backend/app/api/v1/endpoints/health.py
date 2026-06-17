@@ -19,7 +19,7 @@ from app.tasks.celery_app import celery_app
 router = APIRouter()
 
 
-@router.get("")
+@router.get("/")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
 
@@ -63,11 +63,12 @@ def _ping_celery() -> dict[str, Any]:
     return celery_app.control.ping(timeout=2.0)
 
 
-def _check_neo4j() -> int:
-    driver = get_neo4j_driver()
-    with driver.session() as session:
-        result = session.run("MATCH (n) RETURN count(n) AS c LIMIT 1")
-        return result.single()["c"]
+async def _check_neo4j() -> int:
+    driver = await get_neo4j_driver()
+    async with driver.session() as session:
+        result = await session.run("MATCH (n) RETURN count(n) AS c LIMIT 1")
+        record = await result.single()
+        return record["c"]
 
 
 @router.get("/test-error")
@@ -129,6 +130,7 @@ async def system_health(
     telegram_detail = ""
     try:
         if not settings.telegram_session_string or settings.telegram_session_string == "dummy":
+            telegram_status = "OFFLINE"
             telegram_detail = "StringSession is dummy or not configured"
         else:
             run = await _get_latest_run(SourceType.TELEGRAM)
@@ -201,7 +203,7 @@ async def system_health(
     graph_status = "ERROR"
     graph_detail = ""
     try:
-        node_count = await asyncio.to_thread(_check_neo4j)
+        node_count = await _check_neo4j()
         graph_status = "LIVE"
         graph_detail = f"Neo4j node count query ok ({node_count})"
     except Exception as e:

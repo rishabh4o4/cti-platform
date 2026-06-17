@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { ShieldAlert, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Role } from '../../types';
