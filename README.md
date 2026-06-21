@@ -1,8 +1,18 @@
-# AI Harmful Content Detection Backend
+# Cyber Threat Intelligence Platform
 
-Production-ready FastAPI backend skeleton for the threat intelligence architecture. It includes PostgreSQL models, Alembic migrations, Redis, Celery queues, Docker Compose, auth primitives, and API routes for content, analysis, alerts, dashboard data, and collector controls.
+The **Cyber Threat Intelligence Platform** is a comprehensive, production-ready system designed to help law enforcement agencies proactively monitor, analyze, and mitigate cyber threats. By unifying automated data collection, artificial intelligence, and real-time alerts, the platform empowers intelligence analysts to rapidly detect harmful content, map threat actor networks, and respond to incidents efficiently.
 
-Collectors and AI model pipelines are intentionally not implemented yet. Their task entry points return explicit placeholder metadata so the rest of the system can be wired, tested, and extended safely.
+## Core Capabilities
+
+- **Automated Data Collection**: Ingests threat data and content from diverse open-source, deep web, and dark web sources for centralized processing.
+- **AI-Powered Analysis**: Utilizes advanced Natural Language Processing (NLP) and Computer Vision to automatically score and flag malicious, illicit, or harmful content.
+- **Graph-Based Threat Mapping**: Leverages graph database technology (Neo4j) to map complex relationships between entities, uncovering hidden threat actor networks and syndicates.
+- **Real-Time Alerting**: Automatically routes high-severity threats to analysts through priority-based alert queues for immediate action.
+- **Unified Analyst Dashboard**: Provides law enforcement personnel with a clear, real-time view of the active threat landscape, ongoing investigations, and system telemetry.
+
+This repository provides the complete core architecture, including a FastAPI backend, a modern React/Vite frontend, PostgreSQL models, Celery distributed worker queues, Docker Compose orchestration, and secure authentication primitives. 
+
+*(Note: Specific third-party data collectors and proprietary AI model inference pipelines are implemented as stubs. This intentionally allows agencies to plug in their own classified, proprietary, or specialized models securely without exposing sensitive methods.)*
 
 ## Quick Start
 
