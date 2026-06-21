@@ -4,6 +4,12 @@ echo Starting Threat Intel Platform (Backend + Frontend)
 echo =======================================================
 
 echo.
+if not exist .env (
+    echo [INFO] .env file not found. Creating one from .env.example with default local settings...
+    copy .env.example .env > nul
+)
+
+echo.
 echo [1/3] Starting Database Services (Docker Compose)...
 docker compose up db redis minio neo4j -d
 
