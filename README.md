@@ -37,6 +37,20 @@ Useful endpoints:
 
 ## Local Development
 
+For development, you can start all services automatically on Windows using the provided batch script:
+
+```cmd
+start.bat
+```
+
+Alternatively, you can start the services manually:
+
+**1. Start Database Services**
+```bash
+docker compose up db redis minio neo4j -d
+```
+
+**2. Start the Backend**
 ```bash
 cd backend
 python -m venv .venv
@@ -44,6 +58,13 @@ python -m venv .venv
 pip install -e ".[dev]"
 alembic upgrade head
 uvicorn app.main:app --reload
+```
+
+**3. Start the Frontend**
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
 Run tests:
