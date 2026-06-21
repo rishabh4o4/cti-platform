@@ -14,15 +14,30 @@ This repository provides the complete core architecture, including a FastAPI bac
 
 *(Note: Specific third-party data collectors and proprietary AI model inference pipelines are implemented as stubs. This intentionally allows agencies to plug in their own classified, proprietary, or specialized models securely without exposing sensitive methods.)*
 
+## Prerequisites
+
+Ensure the following are installed before proceeding:
+
+| Tool | Minimum Version |
+|------|-----------------|
+| [Python](https://www.python.org/downloads/) | 3.12+ |
+| [Node.js](https://nodejs.org/) | 20+ |
+| [Docker](https://docs.docker.com/get-docker/) + Docker Compose | 24+ |
+
 ## Quick Start
 
 ```bash
 # 1. Bootstrap environment variables
-copy .env.example .env
-# Edit .env and set the three REQUIRED secrets:
-#   JWT_SECRET_KEY  — generate with: python -c "import secrets; print(secrets.token_hex(32))"
+# Linux/macOS:
+cp .env.example .env
+# Windows:
+# copy .env.example .env
+
+# Edit .env and set the four REQUIRED secrets:
+#   JWT_SECRET_KEY   — generate with: python -c "import secrets; print(secrets.token_hex(32))"
 #   ANALYST_PASSWORD — a strong password (bcrypt-hashed automatically at startup)
 #   MINIO_SECRET_KEY — a strong MinIO secret
+#   REDIS_PASSWORD   — a strong Redis password
 # Optional tuning:
 #   GUNICORN_WORKERS — Defaults to 2. Formula: (2 × CPU_cores) + 1
 #   NEO4J_MAX_POOL_SIZE — Defaults to 10.
@@ -70,8 +85,13 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-**3. Start the Frontend**
+**3. Configure and Start the Frontend**
 ```bash
+# Linux/macOS:
+cp frontend/.env.local.example frontend/.env.local
+# Windows:
+# copy frontend\.env.local.example frontend\.env.local
+
 cd frontend
 npm install
 npm run dev
@@ -108,12 +128,11 @@ Internal service calls may use:
 
 Replace these primitives with an IdP or government SSO integration before production deployment.
 
-## First Migration
+## Applying Migrations
 
-The `alembic/versions/` directory is empty in the skeleton. Generate the initial schema:
+Database migrations are pre-generated and live in `backend/alembic/versions/`. Apply them with:
 
 ```bash
 cd backend
-alembic revision --autogenerate -m "initial_schema"
 alembic upgrade head
 ```

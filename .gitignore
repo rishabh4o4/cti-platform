@@ -1,7 +1,10 @@
 .env
 .env.*
 !.env.example
+# Frontend local env is also excluded (contains dev API URLs, not secrets, but keep out of VCS)
+!frontend/.env.local.example
 
+# Python
 __pycache__/
 *.py[cod]
 *.pyo
@@ -11,18 +14,27 @@ __pycache__/
 .coverage
 htmlcov/
 
+# Virtual environments
 .venv/
 venv/
 
+# Build / distribution artifacts
 *.log
 *.sqlite3
 dist/
 build/
 *.egg-info/
 
+# Docker volume data (local dev)
 postgres-data/
 redis-data/
 minio-data/
+
+# Test / scratch artifacts — should not be committed
+*.pdf
+
+# Node
+node_modules/
 
 # backend/fixtures/x_posts.json is intentionally committed despite being in the fixtures directory
 !backend/fixtures/x_posts.json

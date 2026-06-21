@@ -1,4 +1,7 @@
 # FastAPI Backend - Python Dependencies
+#
+# NOTE: The authoritative dependency list is pyproject.toml in this directory.
+# For development, prefer: pip install -e ".[dev]"
 # Install with: pip install -r requirements.txt
 
 # Core FastAPI & Database
@@ -31,6 +34,9 @@ PyJWT[crypto]>=2.9.0
 structlog>=24.4.0
 
 # AI/ML Pipelines & Threat Detection Models
+# NOTE: torch is installed with the CPU-only index to avoid pulling the large GPU wheel.
+# For GPU support, replace with the appropriate CUDA index URL.
+--extra-index-url https://download.pytorch.org/whl/cpu
 torch>=2.4.1
 transformers>=4.45.1
 accelerate>=0.34.2
