@@ -137,10 +137,11 @@ async def system_health(
             if not run:
                 telegram_status = "OFFLINE"
                 telegram_detail = "No runs exist"
-            elif run.status == CollectionRunStatus.COMPLETED:
-                telegram_status = "LIVE"
-                telegram_detail = f"Last run successful at {run.ended_at}"
+            elif run.status == CollectionRunStatus.FAILED:
+                telegram_status = "ERROR"
+                telegram_detail = f"Last run failed. Errors: {run.errors}"
             else:
+                telegram_status = "LIVE"
                 telegram_detail = f"Last run status: {run.status}"
     except Exception as e:
         telegram_detail = str(e)

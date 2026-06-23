@@ -40,7 +40,7 @@ export default function SourceStatus() {
 
   const triggerMutation = useMutation({
     mutationFn: async (sourceId: string) => {
-      await api.post('/collectors/run', { source_id: sourceId });
+      await api.post('/collectors/run', { source: sourceId });
     },
     onSuccess: () => {
       toast.success('Collection triggered successfully');
