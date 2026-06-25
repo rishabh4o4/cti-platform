@@ -9,3 +9,5 @@ tests
 *.pyc
 *.pdf
 verify_*.py
+scratch_*.py
+create_analyst.py

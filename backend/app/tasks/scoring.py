@@ -17,7 +17,7 @@ from app.schemas.risk import RiskScoringInput
 logger = logging.getLogger(__name__)
 
 # Basic keyword heuristic
-KEYWORDS = {"scam", "hack", "leak", "dump", "buy", "sell", "cc", "cvv", "stolen", "carding", "fraud", "phishing", "malware", "virus", "botnet", "exploit", "weapon", "drugs"}
+KEYWORDS = {"scam", "hack", "leak", "dump", "buy", "sell", "cc", "cvv", "stolen", "carding", "fraud", "phishing", "malware", "virus", "botnet", "exploit", "weapon", "drugs", "loan", "investment", "returns", "profit", "guaranteed", "crypto", "forex", "binary"}
 
 from neo4j.exceptions import ServiceUnavailable
 
@@ -73,7 +73,7 @@ async def _run_scoring(upstream_results: list[dict[str, Any]], content_id: str) 
         # 1. nlp_threat_confidence
         category = nlp_flags.get("category", "safe")
         nlp_confidence = nlp_flags.get("confidence", 0.0)
-        if category == "uncertain":
+        if category in ["uncertain", "safe"]:
             nlp_confidence = 0.0
             confidence_mask["nlp_threat_confidence"] = 0.0
         

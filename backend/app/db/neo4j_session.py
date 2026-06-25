@@ -1,7 +1,9 @@
 import logging
 import asyncio
 
-from neo4j import AsyncDriver, AsyncGraphDatabase
+import threading
+
+from neo4j import AsyncDriver, AsyncGraphDatabase, GraphDatabase, Driver
 
 from app.core.config import settings
 
@@ -9,6 +11,9 @@ logger = logging.getLogger(__name__)
 
 _driver: AsyncDriver | None = None
 _driver_lock = asyncio.Lock()
+
+_sync_driver: Driver | None = None
+_sync_driver_lock = threading.Lock()
 
 
 async def get_neo4j_driver() -> AsyncDriver:
@@ -36,6 +41,33 @@ async def get_neo4j_driver() -> AsyncDriver:
             raise
 
     return _driver
+
+
+def get_sync_neo4j_driver() -> Driver:
+    """Lazy, thread-safe initialization of the synchronous Neo4j driver."""
+    global _sync_driver
+    if _sync_driver is not None:
+        return _sync_driver
+
+    with _sync_driver_lock:
+        if _sync_driver is not None:
+            return _sync_driver
+
+        try:
+            logger.info("Initializing synchronous Neo4j driver...")
+            _sync_driver = GraphDatabase.driver(
+                settings.neo4j_uri,
+                auth=(settings.neo4j_user, settings.neo4j_password),
+                max_connection_pool_size=settings.neo4j_max_pool_size,
+            )
+            # Verify connectivity
+            _sync_driver.verify_connectivity()
+            logger.info("Synchronous Neo4j driver initialized successfully.")
+        except Exception as e:
+            logger.error("Failed to initialize synchronous Neo4j driver: %s", e)
+            raise
+
+    return _sync_driver
 
 
 async def close_neo4j_driver() -> None:

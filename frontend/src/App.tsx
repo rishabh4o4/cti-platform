@@ -41,9 +41,7 @@ function App() {
     }
   }, [token, user]);
 
-  if (token && !user) {
-    return <div className="h-screen w-screen bg-background flex items-center justify-center text-text-secondary">Loading...</div>;
-  }
+
 
   return (
     <ErrorBoundary>

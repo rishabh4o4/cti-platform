@@ -24,6 +24,7 @@ services:
       CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
       CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis:6379/1
       MINIO_ENDPOINT: minio:9000
+      HF_HOME: /app/.cache/huggingface
     ports:
       - "8000:8000"
     depends_on:
@@ -40,7 +41,7 @@ services:
              gunicorn app.main:app -w $${GUNICORN_WORKERS:-2} -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
     restart: unless-stopped
     volumes:
-      - huggingface_cache:/root/.cache/huggingface
+      - huggingface_cache:/app/.cache/huggingface
 
   worker-ingest:
     build:
@@ -61,7 +62,7 @@ services:
     command: celery -A app.tasks.celery_app:celery_app worker -Q ingest -n worker-ingest@%h --loglevel=INFO
     restart: unless-stopped
     volumes:
-      - huggingface_cache:/root/.cache/huggingface
+      - huggingface_cache:/app/.cache/huggingface
 
   worker-nlp:
     build:
@@ -82,7 +83,7 @@ services:
     command: celery -A app.tasks.celery_app:celery_app worker -Q nlp -n worker-nlp@%h --loglevel=INFO
     restart: unless-stopped
     volumes:
-      - huggingface_cache:/root/.cache/huggingface
+      - huggingface_cache:/app/.cache/huggingface
 
   worker-vision:
     build:
@@ -103,7 +104,7 @@ services:
     command: celery -A app.tasks.celery_app:celery_app worker -Q vision -n worker-vision@%h --loglevel=INFO --concurrency=1
     restart: unless-stopped
     volumes:
-      - huggingface_cache:/root/.cache/huggingface
+      - huggingface_cache:/app/.cache/huggingface
 
   worker-scoring:
     build:
@@ -124,7 +125,7 @@ services:
     command: celery -A app.tasks.celery_app:celery_app worker -Q scoring,alerts -n worker-scoring@%h --loglevel=INFO
     restart: unless-stopped
     volumes:
-      - huggingface_cache:/root/.cache/huggingface
+      - huggingface_cache:/app/.cache/huggingface
 
   beat:
     build:
@@ -141,7 +142,7 @@ services:
     command: celery -A app.tasks.celery_app:celery_app beat --loglevel=INFO -s /tmp/celerybeat-schedule
     restart: unless-stopped
     volumes:
-      - huggingface_cache:/root/.cache/huggingface
+      - huggingface_cache:/app/.cache/huggingface
 
   db:
     image: postgres:16-alpine

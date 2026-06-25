@@ -8,7 +8,7 @@ import networkx as nx
 from neo4j import Transaction
 
 from app.core.config import settings
-from app.db.neo4j_session import get_neo4j_driver
+from app.db.neo4j_session import get_sync_neo4j_driver
 from app.services.intelligence import extract_entities
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ class GraphDiscoveryEngine:
                 return cls._instance
 
             instance = super().__new__(cls)
-            instance._driver = get_neo4j_driver()
+            instance._driver = get_sync_neo4j_driver()
             # Bounded LRU-style depth cache: username → depth.
             # OrderedDict so we can evict oldest entries when it grows too large.
             instance._depth_cache: OrderedDict[str, int] = OrderedDict()

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Shield } from 'lucide-react';
@@ -9,8 +9,16 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
   const setToken = useAuthStore((state) => state.setToken);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (token && user) {
+      navigate('/');
+    }
+  }, [token, user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -4,9 +4,6 @@ import { useAuthStore } from '../store/useAuthStore';
 const ENV_URL = import.meta.env.VITE_API_BASE_URL;
 const FINAL_URL = ENV_URL || '/api/v1';
 
-console.log('VITE_API_BASE_URL =', ENV_URL);
-console.log('FINAL_URL =', FINAL_URL);
-
 const api = axios.create({
   baseURL: FINAL_URL,
 });

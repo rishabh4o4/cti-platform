@@ -115,6 +115,7 @@ _MIN_PHONE_LENGTH = 8
 CATEGORIES = [
     "phishing",
     "fraud",
+    "financial fraud",
     "carding",
     "malware distribution",
     "credential theft",
